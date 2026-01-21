@@ -1,0 +1,71 @@
+addon "svm" {
+    rpc_api_url = input.rpc_api_url
+    network_id = input.network_id
+    commitment_level = "finalized"
+}
+
+// Loading all signers
+
+signer "authority" "svm::secret_key" {
+    description = "Can upgrade programs and manage critical ops"
+    keypair_json = "~/.config/solana/id.json"
+}
+
+// Loading all programs
+
+variable "program" {
+    description = "The asset_holder program"
+    value = svm::get_program_from_anchor_project("asset_holder")
+}
+
+variable "asset_holder_seed" {
+    description = "Seed for the asset_holder PDA"
+    value = "asset_holder"
+}
+
+variable "asset_holder_pda" {
+    description = "The asset_holder PDA"
+    value = svm::find_pda(
+        variable.program.program_id,
+        [variable.asset_holder_seed]
+    )
+}
+
+// Add SOL-USDC asset pair
+variable "sol_mint" {
+    description = "WSOL mint address"
+    value = "So11111111111111111111111111111111111111112"
+}
+
+variable "sol_decimals" {
+    description = "WSOL decimals"
+    type = "u8"
+    value = 9
+}
+
+variable "usdc_mint" {
+    description = "USDC mint address"
+    value = "EPjFWdd5AufqSSqeM2q8VsJbE1hF5u7xd6P8u6zTKnk"
+}
+
+variable "usdc_decimals" {
+    description = "USDC decimals"
+    type = "u8"
+    value = 6
+}
+
+action "add_sol_usdc_asset_pair" "svm::process_instructions" {
+    signers = [signer.authority]
+    instruction {
+        program_idl = variable.program.idl
+        instruction_name = "add_asset_pair"
+        instruction_args = [
+            variable.sol_mint,
+            variable.usdc_mint,
+            variable.sol_decimals,
+            variable.usdc_decimals
+        ]
+        asset_holder { public_key = variable.asset_holder_pda.pda }
+        authority { public_key = signer.authority.public_key }
+    }
+}

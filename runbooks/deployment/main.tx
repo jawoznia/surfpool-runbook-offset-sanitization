@@ -1,0 +1,64 @@
+################################################################
+# Manage asset-holder deployment through Crypto Infrastructure as Code
+################################################################
+
+addon "svm" {
+    rpc_api_url = input.rpc_api_url
+    network_id = input.network_id
+}
+
+action "deploy_asset_holder" "svm::deploy_program" {
+    description = "Deploy asset_holder program"
+    program = svm::get_program_from_anchor_project("asset_holder") 
+    authority = signer.authority
+    payer = signer.payer
+    // Optional: if you want to deploy the program via a cheatcode when targeting a Surfnet, set `instant_surfnet_deployment = true`
+    // Deploying via a cheatcode will write the program data directly to the program account, rather than sending transactions.
+    // This will make deployments instantaneous, but is deviating from how the deployments will take place on devnet/mainnet.
+    // instant_surfnet_deployment = true
+}
+
+output "deploy_asset_holder_program_id" {
+    description = "Program ID of the deployed asset_holder program"
+    value = action.deploy_asset_holder.program_id
+}
+
+output "deploy_asset_holder_program_idl" {
+    description = "IDL of the deployed asset_holder program"
+    value = action.deploy_asset_holder.program_idl
+}
+
+variable "asset_holder_seed" {
+    description = "Seed for the asset_holder PDA"
+    value = "asset_holder"
+}
+
+variable "asset_holder_pda" {
+    description = "The asset_holder PDA"
+    value = svm::find_pda(
+        action.deploy_asset_holder.program_id,
+        [variable.asset_holder_seed]
+    )
+}
+
+// Initializing the asset_holder
+
+action "initialize_asset_holder" "svm::process_instructions" {
+    signers = [signer.authority]
+    instruction {
+        program_idl = action.deploy_asset_holder.program_idl
+        instruction_name = "initialize"
+        instruction_args = []
+        asset_holder { public_key = variable.asset_holder_pda.pda }
+        authority { public_key = signer.authority.public_key }
+        system_program {
+            public_key = svm::system_program_id()
+        }
+    }
+    depends_on = [action.deploy_asset_holder]
+}
+
+output "initialize_asset_holder_signature" {
+    description = "Signature of the initialize asset_holder action"
+    value = action.initialize_asset_holder.signature
+}
