@@ -6,7 +6,10 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-asset_holder = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+asset_holder = "5bKcGNx6FVX6raPWZCXWjjLEPZpTfMVRM7xomhkWcLF"
+
+[registry]
+url = "https://api.apr.dev"
 
 [provider]
 cluster = "localnet"

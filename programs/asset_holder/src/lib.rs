@@ -4,11 +4,12 @@ use std::collections::BTreeMap;
 
 use anchor_lang::prelude::*;
 
-declare_id!("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+declare_id!("5bKcGNx6FVX6raPWZCXWjjLEPZpTfMVRM7xomhkWcLF");
 
 pub const PREFIX_SIZE: usize = 4;
 pub const MAX_ASSET_PAIRS: usize = 30;
 pub const DISCRIMINATOR_SIZE: usize = 8;
+pub const SEED: &[u8] = b"asset_holder";
 
 #[account]
 pub struct AssetHolder {
@@ -32,7 +33,7 @@ pub struct AddAssetPair<'info> {
 pub struct Initialize<'info> {
     #[account(
         init,
-        seeds = [b"seed"],
+        seeds = [SEED],
         bump,
         payer = authority,
         space = AssetHolder::LEN
