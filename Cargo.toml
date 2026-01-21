@@ -3,4 +3,9 @@ name = "asset-holder"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+crate-type = ["cdylib", "lib"]
+
 [dependencies]
+solana-program = "2.3"
+anchor-lang = "0.32.1"
